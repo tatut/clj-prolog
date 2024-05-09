@@ -61,3 +61,4 @@ MIT for this wrapper code. Projog implementation is Apache-2.0.
 
 ### 2024-05-09
 - Initial implementation work, added type mappings
+- Basic consultation of files and strings and queries work
