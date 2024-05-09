@@ -1,7 +1,8 @@
 (ns clj-prolog.core-test
   (:require [clj-prolog.core :refer [with-prolog consult consult-string q]]
             [clojure.test :refer [deftest testing is]]
-            [clojure.java.io :as io]))
+            [clojure.java.io :as io])
+  (:import (org.projog.api QueryResult)))
 
 
 (deftest ancestry
@@ -78,4 +79,11 @@ mapkeys(map(Ks), Keys) :- maplist(key, Ks, Keys).")
     (with-prolog
       (is (= (list {:X 42} {:X 43})
              (q "Lo = 42, Hi = 43, between(Lo,Hi,X)."
-                {:only #{:X}}))))))
+                {:only #{:X}})))))
+
+  (testing "Raw results"
+    (with-prolog
+      (is (= (list "1" "2" "3")
+             (q "between(1,3,X)."
+                {:result-fn (fn [^QueryResult r]
+                              (str (.getTerm r "X")))}))))))

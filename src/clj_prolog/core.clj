@@ -45,15 +45,19 @@
                            (Character/isUpperCase ^Character (first (name %)))))
              (flatten query))])))
 
-(defn lazy-response-seq [mappings ^QueryResult query-result]
+(defn map-result [mappings]
+  (fn [^QueryResult query-result]
+    (into {}
+          (map (fn [kw]
+                 [(keyword kw) (to-clojure (.getTerm query-result (name kw)))]))
+          (or mappings (.getVariableIds query-result)))))
+
+(defn lazy-response-seq [process-result-fn ^QueryResult query-result]
   (if-not (.next query-result)
     nil
     (lazy-seq
-     (cons (into {}
-                 (map (fn [kw]
-                        [(keyword kw) (to-clojure (.getTerm query-result (name kw)))]))
-                 (or mappings (.getVariableIds query-result)))
-           (lazy-response-seq mappings query-result)))))
+     (cons (process-result-fn query-result)
+           (lazy-response-seq process-result-fn query-result)))))
 
 
 (s/def ::query-def (s/or :prolog string?
@@ -79,10 +83,13 @@
   - options map
 
   Options map may contain the following keys:
-  - :only  set of keywords to return mappings for (instead of all variables)
+  - :only       set of keywords to return mappings for (instead of all variables)
+  - :result-fn  instead of returning maps, use given fn to turn raw query result
+                into result data
 "
   [& args]
   (let [{:keys [prolog query opts]} (q-args args)
         [query mappings] (->query query)]
-    (lazy-response-seq (or (:only opts) mappings)
+    (lazy-response-seq (or (:result-fn opts)
+                           (map-result (or (:only opts) mappings)))
                        (.executeQuery prolog query))))
