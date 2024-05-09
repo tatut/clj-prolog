@@ -17,6 +17,7 @@ Note if the first element of a vector is a keyword, it is turned into a
 compound term, otherwise a list.
 
 | Clojure/Java type | Prolog term type | Example |
+| ----------------- | ---------------- | ------- |
 | keyword | atom | `:foo` => `foo` |
 | long | long | `42` => `42` |
 | double | double | `6.66` => `6.66` |
