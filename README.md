@@ -1,5 +1,7 @@
 # clj-prolog: Clojure interface to Prolog
 
+![test workflow](https://github.com/tatut/clj-prolog/actions/workflows/test.yml/badge.svg)
+
 Use Prolog from Clojure via [Projog](http://www.projog.org/).
 
 This library provides a convenient Clojure wrapper to JVM Prolog implementation.
