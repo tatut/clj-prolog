@@ -1,6 +1,7 @@
 (ns clj-prolog.core
   (:require [clojure.java.io :as io]
-            [clj-prolog.convert :refer [to-prolog to-clojure]])
+            [clj-prolog.convert :refer [to-prolog to-clojure]]
+            [clojure.spec.alpha :as s])
   (:import (org.projog.api Projog  QueryResult)
            (org.projog.core.event ProjogListener)))
 
@@ -54,12 +55,34 @@
                  (or mappings (.getVariableIds query-result)))
            (lazy-response-seq mappings query-result)))))
 
-(defmacro q
-  "Run the given query, returns lazy sequence of matching mappings."
-  [& prolog-and-query]
-  (let [argc (count prolog-and-query)
-        [prolog query] (case argc
-                         1 ['clj-prolog.core/*prolog* (first prolog-and-query)]
-                         2 prolog-and-query)]
-    `(let [[query# mappings#] (->query ~query)]
-       (lazy-response-seq mappings# (.executeQuery ~prolog query#)))))
+
+(s/def ::query-def (s/or :prolog string?
+                         :vector vector?))
+
+(s/def ::q (s/or
+            :query (s/cat :q ::query-def)
+            :engine-query (s/cat :prolog #(instance? Projog %) :q ::query-def)
+            :query-opts (s/cat :q ::query-def :opts map?)
+            :engine-query-opts (s/cat :prolog #(instance? Projog %) :q ::query-def :opts map?)))
+
+(defn q-args [args]
+  (let [{:keys [prolog q opts]} (second (s/conform ::q args))]
+    {:prolog (or prolog *prolog*)
+     :query (second q)
+     :opts (or opts {})}))
+
+(defn q
+  "Run the given query, returns lazy sequence of matching mappings.
+  Arguments can contains:
+  - optional Prolog engine (by default dynamically bound *prolog* is used)
+  - the query (Prolog source string or Clojure vector representation)
+  - options map
+
+  Options map may contain the following keys:
+  - :only  set of keywords to return mappings for (instead of all variables)
+"
+  [& args]
+  (let [{:keys [prolog query opts]} (q-args args)
+        [query mappings] (->query query)]
+    (lazy-response-seq (or (:only opts) mappings)
+                       (.executeQuery prolog query))))
