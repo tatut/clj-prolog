@@ -1,5 +1,6 @@
 (ns clj-prolog.convert
   "Convert between Clojure data and Projog Term classes."
+  (:require [clojure.string :as str])
   (:import (org.projog.core.term Term TermType Atom Structure List ListFactory
                                  IntegerNumber DecimalFraction)
            (java.util Date)
@@ -151,3 +152,14 @@
   List
   (to-clojure [l]
     (clojure-list l)))
+
+(defn prolog-query
+  "Convert a query vector into a Prolog string, like regular data conversion
+  but handles conjunction and disjunction (:and and :or)."
+  [x]
+  (if (vector? x)
+    (condp = (first x)
+      :and (str/join "," (map prolog-query (rest x)))
+      :or (str "(" (str/join ";" (map prolog-query (rest x))) ")")
+      (to-prolog x))
+    (to-prolog x)))

@@ -1,6 +1,6 @@
 (ns clj-prolog.core
   (:require [clojure.java.io :as io]
-            [clj-prolog.convert :refer [to-prolog to-clojure]]
+            [clj-prolog.convert :refer [to-prolog to-clojure prolog-query]]
             [clojure.spec.alpha :as s])
   (:import (org.projog.api Projog  QueryResult)
            (org.projog.core.event ProjogListener)))
@@ -38,12 +38,11 @@
   (if (string? query)
     ;; A Prolog source query, use that as is
     [query nil]
-    (let [prolog-query (str (to-prolog query) ".")]
-      [prolog-query
-       (into #{}
-             (filter #(and (keyword? %)
-                           (Character/isUpperCase ^Character (first (name %)))))
-             (flatten query))])))
+    [(str (prolog-query query) ".")
+     (into #{}
+           (filter #(and (keyword? %)
+                         (Character/isUpperCase ^Character (first (name %)))))
+           (flatten query))]))
 
 (defn map-result [mappings]
   (fn [^QueryResult query-result]

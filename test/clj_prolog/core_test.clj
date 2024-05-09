@@ -87,3 +87,14 @@ mapkeys(map(Ks), Keys) :- maplist(key, Ks, Keys).")
              (q "between(1,3,X)."
                 {:result-fn (fn [^QueryResult r]
                               (str (.getTerm r "X")))}))))))
+
+(deftest conjunction-disjunction
+  (testing "Conjunction and disjunction in query"
+    (with-prolog
+      (is (= (list {:X 1} {:X 2} {:X 99} {:X 100})
+             (q
+              [:and
+               [:between 1 100 :X]
+               [:or
+                [:=< :X 2]
+                [:>= :X 99]]]))))))
