@@ -1,5 +1,5 @@
 (ns clj-prolog.core-test
-  (:require [clj-prolog.core :refer [with-prolog consult q]]
+  (:require [clj-prolog.core :refer [with-prolog consult consult-string q]]
             [clojure.test :refer [deftest testing is]]
             [clojure.java.io :as io]))
 
@@ -31,3 +31,10 @@
     (testing "Prolog query as string"
       (is (= (list {:A :alice :B :bob})
              (q "parent(A,B), A = alice."))))))
+
+
+(deftest string-consultation
+  (with-prolog
+    (consult-string "mortal(X) :- human(X). human(socrates).")
+    (is (= (list {:S :socrates})
+           (q [:mortal :S])))))

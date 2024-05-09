@@ -16,7 +16,15 @@
   that can be read with [[clojure.java.io/reader]]"
   ([input] (consult *prolog* input))
   ([prolog input]
-   (.consultReader prolog (io/reader input))))
+   (with-open [in (io/reader input)]
+     (.consultReader prolog in))))
+
+(defn consult-string
+  "Consult a Prolog source string."
+  ([input] (consult-string *prolog* input))
+  ([prolog input]
+   (assert (string? input) "Input must be a string.")
+   (.consultReader prolog (java.io.StringReader. input))))
 
 (defmacro with-prolog
   "Run body with [[*prolog*]] bound to a fresh Prolog instance."
