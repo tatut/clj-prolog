@@ -26,7 +26,7 @@ compound term, otherwise a list.
 | string | compound term | `"Hello"` => `string(Hello)` |
 | map | compound term | `{:foo 42 :bar "something"}` => `map([foo-42,bar-string(something)])` |
 | Date | compound term |  `#inst "2024-05-09T05:08:58.458-00:00"` => `timestamp(1715231338458)` |
-| LocalDate | compound term | `(LocalDate/of 2024 5 9)` => `date(2024, 5, )` |
+| LocalDate | compound term | `(LocalDate/of 2024 5 9)` => `date(2024, 5, 9)` |
 | LocalTime | compound term | `(LocalTime/parse "10:45")` => `time(10,45,0,0)` |
 | LocalDateTime | compound term | `(LocalDateTime/of (LocalDate/of 2024 5 9) (LocalTime/of 10 45))` =>  `datetime(date(2024,5,9),time(10,45,0,0))` |
 
