@@ -12,7 +12,7 @@ and back.
 
 Query can be passed in as a Clojure vector or a Prolog string.
 
-See `clj-prolog.core` namespace.
+See `clj-prolog.core` namespace and [tests](https://github.com/tatut/clj-prolog/blob/main/test/clj_prolog/core_test.clj) for more examples..
 
 ```clojure
 (with-prolog
