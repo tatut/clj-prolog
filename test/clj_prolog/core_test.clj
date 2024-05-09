@@ -44,3 +44,31 @@
     (is (= (for [i (range 1 11)]
              {:X i})
            (q [:between 1 10 :X])))))
+
+(deftest filter-a-map
+  (with-prolog
+    (consult (io/resource "bigmap.pl"))
+    (is (= (list {:M {:foo 420
+                      :baz 666}})
+           (q [:bigmap
+               {:small 42
+                :foo 420
+                :hundred 100
+                :baz 666
+                :negative -55}
+               :M])))))
+
+(deftest extract-keys
+  (testing "Extract map keys using maplist"
+    (with-prolog
+      (consult-string "
+key(Key-_, Key).
+mapkeys(map(Ks), Keys) :- maplist(key, Ks, Keys).")
+      (is (= (list {:K (list :a :b :c)})
+             (q [:mapkeys {:a 112323 :b 59849 :c 54754} :K])))))
+
+  (testing "Backtrack over each key"
+    (with-prolog
+      (consult-string "mapkeys(map(Ks), Key) :- member(Key-_, Ks).")
+      (is (= #{{:K :a} {:K :b} {:K :c}}
+             (set (q [:mapkeys {:a 44 :b 99 :c 12321} :K])))))))
