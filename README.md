@@ -6,6 +6,25 @@ This library provides a convenient Clojure wrapper to JVM Prolog implementation.
 Clojure data and select Java classes are roundtripped to Prolog terms
 and back.
 
+## Usage
+
+Query can be passed in as a Clojure vector or a Prolog string.
+
+See `clj-prolog.core` namespace.
+
+```clojure
+(with-prolog
+  (consult-string "mortal(X) :- human(X). human(socrates).")
+  (q [:mortal :Name])) ;; => ({:Name :socrates})
+```
+
+```clojure
+(with-prolog
+  (q "between(1,7,X), 0 is X mod 2.")) ;; => ({:X 2} {:X 4} {:X 6})
+```
+
+
+
 ## Type mapping
 
 Type mapping from Clojure data to Prolog terms is made to be convenient to use from Clojure.
