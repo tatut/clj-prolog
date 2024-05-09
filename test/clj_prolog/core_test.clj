@@ -38,3 +38,9 @@
     (consult-string "mortal(X) :- human(X). human(socrates).")
     (is (= (list {:S :socrates})
            (q [:mortal :S])))))
+
+(deftest members
+  (with-prolog
+    (is (= (for [i (range 1 11)]
+             {:X i})
+           (q [:between 1 10 :X])))))
