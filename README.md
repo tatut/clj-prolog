@@ -14,15 +14,27 @@ Query can be passed in as a Clojure vector or a Prolog string.
 
 See `clj-prolog.core` namespace and [tests](https://github.com/tatut/clj-prolog/blob/main/test/clj_prolog/core_test.clj) for more examples..
 
+Queries can be Clojure vectors:
 ```clojure
 (with-prolog
   (consult-string "mortal(X) :- human(X). human(socrates).")
   (q [:mortal :Name])) ;; => ({:Name :socrates})
 ```
 
+Or Prolog source:
 ```clojure
 (with-prolog
   (q "between(1,7,X), 0 is X mod 2.")) ;; => ({:X 2} {:X 4} {:X 6})
+```
+
+Conjunction and disjunction work in vectors as well:
+```clojure
+(with-prolog
+  (q [:and
+       [:between 1 100 :X]
+       [:or
+         [:=< :X 2]
+         [:>= :X 99]]])) ;; => ({:X 1} {:X 2} {:X 99} {:X 100})
 ```
 
 
