@@ -72,3 +72,10 @@ mapkeys(map(Ks), Keys) :- maplist(key, Ks, Keys).")
       (consult-string "mapkeys(map(Ks), Key) :- member(Key-_, Ks).")
       (is (= #{{:K :a} {:K :b} {:K :c}}
              (set (q [:mapkeys {:a 44 :b 99 :c 12321} :K])))))))
+
+(deftest query-options
+  (testing "Only return some mappings"
+    (with-prolog
+      (is (= (list {:X 42} {:X 43})
+             (q "Lo = 42, Hi = 43, between(Lo,Hi,X)."
+                {:only #{:X}}))))))
