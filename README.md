@@ -51,7 +51,7 @@ compound term, otherwise a list.
 
 | Clojure/Java type | Prolog term type | Example |
 | ----------------- | ---------------- | ------- |
-| keyword | atom | `:foo` => `foo` |
+| keyword | atom/variable | `:foo` => `foo` |
 | long | long | `42` => `42` |
 | double | double | `6.66` => `6.66` |
 | vector | compound term | `[:foo 123 :bar]` => `foo(123,bar)` |
@@ -64,12 +64,18 @@ compound term, otherwise a list.
 | LocalDateTime | compound term | `(LocalDateTime/of (LocalDate/of 2024 5 9) (LocalTime/of 10 45))` =>  `datetime(date(2024,5,9),time(10,45,0,0))` |
 
 
-
 ## Licence
 
 MIT for this wrapper code. Projog implementation is Apache-2.0.
 
 ## Changes
+
+### 2024-05-10
+- Passthrough CLP variables in clj/prolog conversion
+- Convert empty Prolog list back to `nil` in Clojure
+- Map keyword beginning with uppercase to variable
+- Add sudoku solver CLP test
+- Add helper for single value producing function as predicate
 
 ### 2024-05-09
 - Initial implementation work, added type mappings

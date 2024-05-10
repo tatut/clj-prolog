@@ -16,17 +16,20 @@
     SucceedsNeverPredicate/SINGLETON))
 
 (defn arity ^long [f]
-  (-> f class .getDeclaredMethods first .getParameterTypes alength))
+  (-> f class .getDeclaredMethods ^java.lang.reflect.Method first .getParameterTypes alength))
 
-(defn- add-predicate! [prolog predicate-name retryable? fn-arity get-predicate-fn]
+(defn add-predicate! [^Projog prolog predicate-name retryable? fn-arity get-predicate-fn]
+  (assert (instance? Projog prolog) "Specify Prolog instance")
+  (assert (keyword? predicate-name) "Predicate name must be a keyword")
+  (assert (fn? get-predicate-fn))
   (-> prolog .getKnowledgeBase .getPredicates
       (.addPredicateFactory
        (PredicateKey. (name predicate-name) fn-arity)
        (reify PredicateFactory
          (^Predicate getPredicate [_ ^"[Lorg.projog.core.term.Term;" terms]
-           (if-not (= fn-arity (count terms))
-             (throw (IllegalArgumentException. (str "Expected " fn-arity " arguments.")))
-             (apply get-predicate-fn terms)))
+          (if-not (= fn-arity (count terms))
+            (throw (IllegalArgumentException. (str "Expected " fn-arity " arguments.")))
+            (apply get-predicate-fn terms)))
 
          (^boolean isRetryable [_] (boolean retryable?))))))
 
@@ -36,7 +39,6 @@
   value with the second term."
   ([predicate-name lookupable] (lookup *prolog* predicate-name lookupable))
   ([^Projog prolog predicate-name lookup]
-   (assert (keyword? predicate-name) "Predicate name must be a keyword.")
    (assert (instance? clojure.lang.ILookup lookup))
    (add-predicate!
     prolog predicate-name false 2
@@ -45,6 +47,19 @@
        (let [v (get lookup (to-clojure in) ::not-found)]
          (when (not= v ::not-found)
            (.unify ^Term out ^Term (to-prolog v)))))))))
+
+(defn single
+  "Install the given function that produces a single value as predicate."
+  ([predicate-name single-value-fn] (single *prolog* predicate-name single-value-fn))
+  ([^Projog prolog predicate-name single-value-fn]
+   (add-predicate!
+    prolog predicate-name false (inc (arity single-value-fn))
+    (fn [& terms]
+      (let [args (butlast terms)
+            output (last terms)]
+        (success1
+         (.unify ^Term output
+                 ^Term (to-prolog (apply single-value-fn (map to-clojure args))))))))))
 
 (defn sequence
   "Install function of arity N as predicate of N+1 where the last
@@ -59,11 +74,11 @@
             output (last terms)]
         (reify Predicate
           (^boolean evaluate [_this]
-            (boolean
-             (let [vs @vals]
-               (when (seq vs)
-                 (swap! vals rest)
-                 (.backtrack  output)
-                 (.unify output (to-prolog (first vs)))))))
+           (boolean
+            (let [vs @vals]
+              (when (seq vs)
+                (swap! vals rest)
+                (.backtrack ^Term output)
+                (.unify ^Term output (to-prolog (first vs)))))))
           (^boolean couldReevaluationSucceed [_this]
            (boolean (seq @vals)))))))))

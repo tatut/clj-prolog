@@ -1,8 +1,9 @@
 (ns clj-prolog.convert
   "Convert between Clojure data and Projog Term classes."
   (:require [clojure.string :as str])
-  (:import (org.projog.core.term Term TermType Atom Structure List ListFactory
-                                 IntegerNumber DecimalFraction)
+  (:import (org.projog.core.term Term TermType Atom Structure List EmptyList ListFactory
+                                 IntegerNumber DecimalFraction Variable)
+           (org.projog.core.predicate.builtin.clp ClpVariable)
            (java.util Date)
            (java.time LocalDate LocalTime LocalDateTime)))
 
@@ -64,7 +65,11 @@
       (prolog-list v)))
 
   clojure.lang.Keyword
-  (to-prolog [kw] (Atom. (name kw)))
+  (to-prolog [kw]
+    (let [n (name kw)]
+      (if (Character/isUpperCase ^Character (first n))
+        (Variable. n)
+        (Atom. n))))
 
   clojure.lang.PersistentList
   (to-prolog [l] (prolog-list l))
@@ -107,7 +112,10 @@
                         (into-array
                          Term
                          (for [[k v] m]
-                           (compound "-" k v))))]))))
+                           (compound "-" k v))))])))
+
+  ClpVariable
+  (to-prolog [v] v))
 
 (extend-protocol ToClojure
   Atom
@@ -151,7 +159,16 @@
 
   List
   (to-clojure [l]
-    (clojure-list l)))
+    (clojure-list l))
+
+  EmptyList
+  (to-clojure [_] nil)
+
+  Variable
+  (to-clojure [v] (keyword (.getId v)))
+
+  ClpVariable
+  (to-clojure [v] v))
 
 (defn prolog-query
   "Convert a query vector into a Prolog string, like regular data conversion
